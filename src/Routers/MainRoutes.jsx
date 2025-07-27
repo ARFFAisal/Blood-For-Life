@@ -2,7 +2,7 @@ import axios from "axios";
 import { createBrowserRouter } from "react-router";
 import RootLayout from "../layouts/RootLayout";
 
-import AvailableBooks from "../pages/AvailableBooks";
+import AvailableBooks from "../pages/DonationRequests";
 import Dashboard from "../pages/Dashboard";
 import DetailsPage from "../pages/DetailsPage";
 import Error from "../pages/Error";
@@ -13,6 +13,7 @@ import Register from "../pages/Register";
 import DonationRequestForm from "../pages/DonationRequestForm";
 import Myrequests from "../pages/Myrequests";
 import PrivateRoute from "../Routers/PrivateRoute";
+import DonationRequests from "../pages/DonationRequests";
 
 const MainRoutes = createBrowserRouter([
   {
@@ -33,8 +34,8 @@ const MainRoutes = createBrowserRouter([
         ),
       },
       {
-        path: "/available-books",
-        element: <AvailableBooks />,
+        path: "/available-requests",
+        element: <DonationRequests></DonationRequests>,
       },
       {
         path: "/my-requests",
@@ -45,10 +46,10 @@ const MainRoutes = createBrowserRouter([
         ),
       },
       {
-        path: "/details/:bookId",
-        element: <DetailsPage />,
+        path: "/details/:requestId",
+        element: <PrivateRoute><DetailsPage /></PrivateRoute>,
         loader: async ({ params }) => {
-          const {data} = await axios.get(`http://localhost:5000/details/${params.bookId}`);
+          const {data} = await axios.get(`http://localhost:5000/details/${params.requestId}`);
           return data;
         },
       },

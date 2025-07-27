@@ -14,8 +14,8 @@ const Header = () => {
       path: "/",
     },
     {
-      name: "Available Books",
-      path: "/available-books",
+      name: "Donation Requests",
+      path: "/available-requests",
     },
     {
       name: "Donation Request",
