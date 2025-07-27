@@ -14,6 +14,7 @@ import DonationRequestForm from "../pages/DonationRequestForm";
 import Myrequests from "../pages/Myrequests";
 import PrivateRoute from "../Routers/PrivateRoute";
 import DonationRequests from "../pages/DonationRequests";
+import BlogPage from "../pages/BlogPage";
 
 const MainRoutes = createBrowserRouter([
   {
@@ -65,7 +66,10 @@ const MainRoutes = createBrowserRouter([
         path: "registration",
         element: <Register></Register>,
       },
-      {},
+      {
+        path: "/blogs",
+        element: <BlogPage />,
+      },
     ],
   },
 ]);
