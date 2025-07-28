@@ -15,7 +15,7 @@ const Header = () => {
   const commonLinks = [
     { name: "Home", path: "/" },
     { name: "Donation Requests", path: "/available-requests" },
-    { name: "Blog", path: "/blog" },
+    { name: "Blog", path: "/blogs" },
   ];
 
   const donorLinks = [
