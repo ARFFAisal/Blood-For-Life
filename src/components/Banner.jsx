@@ -2,6 +2,7 @@
 import { Link } from "react-router-dom";
 import Lottie from "lottie-react";
 
+
 import blood from "../assets/blood.json"
 
 export default function Banner() {

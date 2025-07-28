@@ -1,74 +1,111 @@
 import { useContext, useState } from "react";
 import { CgMenuMotion } from "react-icons/cg";
 import { RiMenuAddLine } from "react-icons/ri";
-import { Link, NavLink } from "react-router";
+import { Link, NavLink, useNavigate } from "react-router-dom";
 import { AuthContext } from "../providers/AuthProvider";
+import { FaUserCircle } from "react-icons/fa";
 
 const Header = () => {
   const { user, logOut } = useContext(AuthContext);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [isPageLoad, setisPageLoad] = useState(false);
-  const menu = [
-    {
-      name: "Home",
-      path: "/",
-    },
-    {
-      name: "Donation Requests",
-      path: "/available-requests",
-    },
-    {
-      name: "Donation Request",
-      path: "/donation-request",
-    },
-    {
-      name: "My Requests",
-      path: "/my-requests",
-    },
-    {
-      name: "Dashboard",
-      path: "/dashboard",
-    },
-    
+  const navigate = useNavigate();
+
+  const commonLinks = [
+    { name: "Home", path: "/" },
+    { name: "Donation Requests", path: "/available-requests" },
+    { name: "Blog", path: "/blog" },
   ];
+
+  const donorLinks = [
+    { name: "Donation Request", path: "/donation-request" },
+    { name: "My Requests", path: "/my-requests" },
+    { name: "Dashboard", path: "/dashboard" },
+    { name: "Funding", path: "/funding" },
+  ];
+
+  const handleLogout = () => {
+    logOut();
+    setIsDropdownOpen(false);
+    navigate("/");
+  };
+
   return (
-    <nav className="overflow-x-clip">
+    <nav className="overflow-x-clip bg-white shadow-sm sticky top-0 z-50">
       {user && (
         <p className="text-center text-white bg-black py-2 bg-opacity-90">
-          Welcome Mr. {user?.displayName} ❤️‍🔥❤️‍🔥. Now You Can Watch All the
-          Recipies🍉🍉
+          Welcome, {user?.displayName} 💉
         </p>
       )}
-      <div className="text-center bg-slate-400"></div>
-      <div className="w-11/12 mx-auto py-5 flex justify-between items-center relative">
-        <Link to="/" className="logo">
-          <span className="text-xl font-bold text-stone-700">
-            Auth 🍳 Template
-          </span>
+      <div className="w-11/12 mx-auto py-4 flex justify-between items-center relative">
+        <Link to="/" className="logo text-2xl font-bold text-red-600">
+          BloodConnect
         </Link>
 
-        {/* menu-lg start */}
-        <ul className="hidden lg:flex items-center gap-5 ">
-          {menu.map((item) => (
-            <NavLink key={item.path} to={item.path}>
+        {/* ✅ Desktop Menu */}
+        <ul className="hidden lg:flex items-center gap-6 text-gray-700">
+          {commonLinks.map((item) => (
+            <NavLink key={item.path} to={item.path} className="hover:text-red-500 font-medium">
               {item.name}
             </NavLink>
           ))}
-          {user && user?.email ? (
+
+          {user?.email ? (
             <>
-              <button className="cursor-pointer" onClick={logOut}>
-                Logout
-              </button>
+              {donorLinks.slice(3, 4).map((item) => (
+                <NavLink
+                  key={item.path}
+                  to={item.path}
+                  className="hover:text-red-500 font-medium"
+                >
+                  {item.name}
+                </NavLink>
+              ))}
+              {/* Avatar with dropdown */}
+              <div className="relative">
+                <button onClick={() => setIsDropdownOpen((prev) => !prev)}>
+                  <FaUserCircle className="text-2xl text-red-500" />
+                </button>
+                {isDropdownOpen && (
+                  <ul className="absolute top-10 right-0 bg-white shadow rounded w-40 z-50 text-left">
+                    {donorLinks.slice(0, 3).map((item) => (
+                      <li key={item.path}>
+                        <NavLink
+                          to={item.path}
+                          className="block px-4 py-2 hover:bg-gray-100"
+                          onClick={() => setIsDropdownOpen(false)}
+                        >
+                          {item.name}
+                        </NavLink>
+                      </li>
+                    ))}
+                    <li>
+                      <button
+                        onClick={handleLogout}
+                        className="w-full text-left px-4 py-2 hover:bg-gray-100"
+                      >
+                        Logout
+                      </button>
+                    </li>
+                  </ul>
+                )}
+              </div>
             </>
           ) : (
             <>
-              <NavLink to="/login">Login</NavLink>
-              <NavLink to="/registration">Register</NavLink>
+              <NavLink to="/login" className="hover:text-red-500 font-medium">
+                Login
+              </NavLink>
+              <NavLink to="/registration" className="hover:text-red-500 font-medium">
+                Register
+              </NavLink>
             </>
           )}
         </ul>
 
-        <div className="lg:hidden ">
+        {/* ✅ Mobile Menu */}
+        <div className="lg:hidden">
           {!isMenuOpen ? (
             <RiMenuAddLine
               onClick={() => {
@@ -76,50 +113,58 @@ const Header = () => {
                 setisPageLoad(true);
               }}
               className="text-2xl cursor-pointer"
-            ></RiMenuAddLine>
+            />
           ) : (
             <CgMenuMotion
               onClick={() => setIsMenuOpen(false)}
               className="text-2xl cursor-pointer"
-            ></CgMenuMotion>
+            />
           )}
+        </div>
+      </div>
 
-          {
-            <ul
-              className={`flex animate__animated bg-white flex-col lg:hidden gap-5 absolute z-50 bg-opacity-70 w-full top-14  left-0 ${
-                isMenuOpen
-                  ? "animate__fadeInRight "
-                  : isPageLoad
-                  ? "animate__fadeOutRight flex "
-                  : "hidden"
-              } `}
+      {/* Mobile Dropdown */}
+      {isMenuOpen && (
+        <ul className="lg:hidden flex flex-col gap-4 p-4 bg-white shadow-md text-gray-700 z-50">
+          {commonLinks.map((item) => (
+            <NavLink
+              key={item.path}
+              to={item.path}
+              onClick={() => setIsMenuOpen(false)}
+              className="hover:text-red-500"
             >
-              {menu.map((item) => (
+              {item.name}
+            </NavLink>
+          ))}
+
+          {user?.email ? (
+            <>
+              {donorLinks.map((item) => (
                 <NavLink
-                  className="border-b-2 hover:border-orange-500 transition duration-200
-                   "
                   key={item.path}
                   to={item.path}
+                  onClick={() => setIsMenuOpen(false)}
+                  className="hover:text-red-500"
                 >
                   {item.name}
                 </NavLink>
               ))}
-              {user && user?.email ? (
-                <>
-                  <button className="cursor-pointer" onClick={logOut}>
-                    Logout
-                  </button>
-                </>
-              ) : (
-                <>
-                  <NavLink to="/login">Login</NavLink>
-                  <NavLink to="/registration">Register</NavLink>
-                </>
-              )}
-            </ul>
-          }
-        </div>
-      </div>
+              <button onClick={handleLogout} className="text-left hover:text-red-500">
+                Logout
+              </button>
+            </>
+          ) : (
+            <>
+              <NavLink to="/login" onClick={() => setIsMenuOpen(false)}>
+                Login
+              </NavLink>
+              <NavLink to="/registration" onClick={() => setIsMenuOpen(false)}>
+                Register
+              </NavLink>
+            </>
+          )}
+        </ul>
+      )}
     </nav>
   );
 };
