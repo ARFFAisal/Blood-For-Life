@@ -4,7 +4,7 @@ import { useNavigate } from "react-router-dom";
 import { getAuth } from "firebase/auth";
 
 const axiosSecure = axios.create({
-  baseURL: "http://localhost:5000",
+  baseURL: "https://assignment-12-sever.vercel.app",
   withCredentials: true,
 });
 

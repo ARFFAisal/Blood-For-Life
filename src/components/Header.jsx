@@ -1,16 +1,27 @@
-import { useContext, useState } from "react";
+// src/components/Header.jsx
+import { useContext, useState, useEffect } from "react";
 import { CgMenuMotion } from "react-icons/cg";
 import { RiMenuAddLine } from "react-icons/ri";
 import { Link, NavLink, useNavigate } from "react-router-dom";
 import { AuthContext } from "../providers/AuthProvider";
 import { FaUserCircle } from "react-icons/fa";
+import useAxiosSecure from "../hooks/useAxiosSecure";
 
 const Header = () => {
   const { user, logOut } = useContext(AuthContext);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
-  const [isPageLoad, setisPageLoad] = useState(false);
+  const [userRole, setUserRole] = useState(null);
   const navigate = useNavigate();
+  const axiosSecure = useAxiosSecure();
+
+  useEffect(() => {
+    if (user?.email) {
+      axiosSecure.get(`/users/${user.email}`).then((res) => {
+        setUserRole(res.data?.role); // role can be "admin", "volunteer", or "donor"
+      });
+    }
+  }, [user?.email, axiosSecure]);
 
   const commonLinks = [
     { name: "Home", path: "/" },
@@ -35,7 +46,7 @@ const Header = () => {
     <nav className="overflow-x-clip bg-white shadow-sm sticky top-0 z-50">
       {user && (
         <p className="text-center text-white bg-black py-2 bg-opacity-90">
-          Welcome, {user?.displayName} 💉
+          Welcome, {user?.displayName} 💨
         </p>
       )}
       <div className="w-11/12 mx-auto py-4 flex justify-between items-center relative">
@@ -43,26 +54,41 @@ const Header = () => {
           BloodConnect
         </Link>
 
-        {/* ✅ Desktop Menu */}
+        {/* Desktop Menu */}
         <ul className="hidden lg:flex items-center gap-6 text-gray-700">
           {commonLinks.map((item) => (
-            <NavLink key={item.path} to={item.path} className="hover:text-red-500 font-medium">
+            <NavLink
+              key={item.path}
+              to={item.path}
+              className={({ isActive }) =>
+                isActive ? "text-red-500 font-semibold" : "hover:text-red-500 font-medium"
+              }
+            >
               {item.name}
             </NavLink>
           ))}
 
+          {(user && (userRole === "admin" || userRole === "volunteer")) && (
+            <NavLink
+              to="/dashboard/content-management"
+              className={({ isActive }) =>
+                isActive ? "text-red-500 font-semibold" : "hover:text-red-500 font-medium"
+              }
+            >
+              Content Management
+            </NavLink>
+          )}
+
           {user?.email ? (
             <>
-              {donorLinks.slice(3, 4).map((item) => (
-                <NavLink
-                  key={item.path}
-                  to={item.path}
-                  className="hover:text-red-500 font-medium"
-                >
-                  {item.name}
-                </NavLink>
-              ))}
-              {/* Avatar with dropdown */}
+              <NavLink
+                to="/dashboard"
+                className={({ isActive }) =>
+                  isActive ? "text-red-500 font-semibold" : "hover:text-red-500 font-medium"
+                }
+              >
+                Dashboard
+              </NavLink>
               <div className="relative">
                 <button onClick={() => setIsDropdownOpen((prev) => !prev)}>
                   <FaUserCircle className="text-2xl text-red-500" />
@@ -104,14 +130,11 @@ const Header = () => {
           )}
         </ul>
 
-        {/* ✅ Mobile Menu */}
+        {/* Mobile Menu Icon */}
         <div className="lg:hidden">
           {!isMenuOpen ? (
             <RiMenuAddLine
-              onClick={() => {
-                setIsMenuOpen(true);
-                setisPageLoad(true);
-              }}
+              onClick={() => setIsMenuOpen(true)}
               className="text-2xl cursor-pointer"
             />
           ) : (
@@ -123,7 +146,7 @@ const Header = () => {
         </div>
       </div>
 
-      {/* Mobile Dropdown */}
+      {/* Mobile Dropdown Menu */}
       {isMenuOpen && (
         <ul className="lg:hidden flex flex-col gap-4 p-4 bg-white shadow-md text-gray-700 z-50">
           {commonLinks.map((item) => (
@@ -136,6 +159,16 @@ const Header = () => {
               {item.name}
             </NavLink>
           ))}
+
+          {(user && (userRole === "admin" || userRole === "volunteer")) && (
+            <NavLink
+              to="/dashboard/content-management"
+              onClick={() => setIsMenuOpen(false)}
+              className="hover:text-red-500"
+            >
+              Content Management
+            </NavLink>
+          )}
 
           {user?.email ? (
             <>

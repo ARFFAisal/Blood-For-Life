@@ -11,17 +11,12 @@ const PrivateRoute = ({ children }) => {
   const [statusLoading, setStatusLoading] = useState(true);
   const [isBlocked, setIsBlocked] = useState(false);
 
-  // ⏳ Wait until auth loads, then check status from DB
   useEffect(() => {
     const checkUserStatus = async () => {
       if (user?.email) {
         try {
           const res = await axiosSecure.get(`/users/${user.email}`);
-          if (res.data?.status === "blocked") {
-            setIsBlocked(true);
-          } else {
-            setIsBlocked(false);
-          }
+          setIsBlocked(res.data?.status === "blocked");
         } catch (err) {
           console.error("Failed to fetch user status", err);
         }
@@ -36,17 +31,14 @@ const PrivateRoute = ({ children }) => {
     }
   }, [user, axiosSecure]);
 
-  // Still loading Firebase
   if (loading || statusLoading) {
     return <Loading />;
   }
 
-  // 🔒 Not logged in
   if (!user) {
     return <Navigate to="/login" state={{ from: location }} replace />;
   }
 
-  // ⛔ Blocked users not allowed
   if (isBlocked) {
     return (
       <div className="text-center p-10 text-red-600 font-semibold text-xl">
@@ -55,7 +47,6 @@ const PrivateRoute = ({ children }) => {
     );
   }
 
-  // ✅ Authenticated and active user
   return children;
 };
 

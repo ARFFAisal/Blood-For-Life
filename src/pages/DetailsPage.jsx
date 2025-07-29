@@ -5,33 +5,69 @@ import { AuthContext } from "../providers/AuthProvider";
 
 export default function DetailsPage() {
   const { user } = useContext(AuthContext);
-  const request = useLoaderData();
+  const initialRequest = useLoaderData();
   const [modalOpen, setModalOpen] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [request, setRequest] = useState(initialRequest); // 🆕 local state to reflect updates
 
-  const handleDonationConfirm = () => {
-    setLoading(true);
-    axios
-      .patch(`http://localhost:5000/donation-request/${request._id}`, {
-        status: "inprogress",
-        donorName: user.displayName,
-        donorEmail: user.email,
-      })
-      .then((res) => {
-        console.log(res.data);
-        alert("Donation confirmed!");
-        setModalOpen(false);
-      })
-      .catch(console.error)
-      .finally(() => setLoading(false));
-  };
+ const handleDonationConfirm = async () => {
+  setLoading(true);
+  try {
+    // 1. Get Firebase ID token from the authenticated user
+    const token = await user.getIdToken();
+
+    // 2. Send PATCH request with Authorization header including the token
+    const res = await axios.patch(
+  `https://assignment-12-sever.vercel.app/donation-request/${request._id}`,
+  {
+    status: "inprogress",
+    donorName: user.displayName,
+    donorEmail: user.email,
+  },
+  {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  }
+);
+
+
+    // 3. If update is successful, update local state & UI
+    if (res.data.modifiedCount > 0) {
+      setRequest({ ...request, status: "inprogress" });
+      alert("✅ Donation confirmed!");
+      setModalOpen(false);
+    }
+  } catch (err) {
+    console.error("❌ Failed to confirm donation:", err);
+    alert("Something went wrong. Try again.");
+  } finally {
+    setLoading(false);
+  }
+};
+
 
   return (
     <div className="max-w-4xl mx-auto px-4 py-8">
       <div className="bg-white shadow-xl rounded-2xl overflow-hidden p-6 space-y-4">
-        <h2 className="text-3xl font-bold text-red-600">
-          Donation Request for {request.recipientName}
-        </h2>
+        <div className="flex items-center justify-between">
+          <h2 className="text-3xl font-bold text-red-600">
+            Donation Request for {request.recipientName}
+          </h2>
+          {/* 🆕 Status badge */}
+          <span
+            className={`px-3 py-1 text-sm font-semibold rounded-full ${
+              request.status === "pending"
+                ? "bg-yellow-100 text-yellow-800"
+                : request.status === "inprogress"
+                ? "bg-blue-100 text-blue-800"
+                : "bg-green-100 text-green-800"
+            }`}
+          >
+            {request.status}
+          </span>
+        </div>
+
         <p className="text-gray-700">
           <strong>Location:</strong> {request.district}, {request.upazila}
         </p>
@@ -51,15 +87,18 @@ export default function DetailsPage() {
           <strong>Message:</strong> {request.message}
         </p>
 
-        <button
-          onClick={() => setModalOpen(true)}
-          className="mt-4 w-full bg-red-600 text-white text-lg py-2 rounded-lg hover:bg-red-700 transition"
-        >
-          Donate
-        </button>
+        {/* Only show Donate button if not already inprogress */}
+        {request.status === "pending" && (
+          <button
+            onClick={() => setModalOpen(true)}
+            className="mt-4 w-full bg-red-600 text-white text-lg py-2 rounded-lg hover:bg-red-700 transition"
+          >
+            Donate
+          </button>
+        )}
       </div>
 
-      {/* Donation Modal */}
+      {/* ✅ Donation Modal */}
       {modalOpen && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white p-6 rounded-xl shadow-xl w-full max-w-md">
