@@ -1,32 +1,37 @@
 // RoleBasedRoute.jsx
-import { Navigate } from "react-router-dom";
 import { useContext, useEffect, useState } from "react";
-import { AuthContext } from "../providers/AuthProvider";
+import { Navigate, Outlet } from "react-router-dom";
 import useAxiosSecure from "../hooks/useAxiosSecure";
+import { AuthContext } from "../providers/AuthProvider";
+import Loading from "../pages/Loading";
 
-export default function RoleBasedRoute({ children, allowedRoles }) {
+export default function RoleBasedRoute({ allowedRoles }) {
   const { user, loading } = useContext(AuthContext);
-  const [role, setRole] = useState(null);
-  const [isLoading, setIsLoading] = useState(true);
   const axiosSecure = useAxiosSecure();
+
+  const [role, setRole] = useState(null);
+  const [checking, setChecking] = useState(true);
 
   useEffect(() => {
     if (user?.email) {
-      axiosSecure.get(`/users/role/${user.email}`).then((res) => {
-        setRole(res.data?.role);
-        setIsLoading(false);
-      });
-    } else {
-      setIsLoading(false);
+      const fetchRole = async () => {
+        try {
+          const res = await axiosSecure.get(`/users/role?email=${user.email}`);
+          setRole(res.data.role);
+        } catch (err) {
+          console.error("Failed to fetch role:", err);
+        } finally {
+          setChecking(false);
+        }
+      };
+      fetchRole();
     }
-  }, [user, axiosSecure]);
+  }, [user?.email, axiosSecure]);
 
-  if (loading || isLoading) {
-    return <div className="text-center text-lg font-medium py-10">Loading...</div>;
-  }
+  if (loading || checking) return <Loading />;
 
-  if (user && allowedRoles.includes(role)) {
-    return children;
+  if (allowedRoles.includes(role)) {
+    return <Outlet />;
   }
 
   return <Navigate to="/" replace />;

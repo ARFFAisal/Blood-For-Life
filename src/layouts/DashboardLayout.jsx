@@ -23,7 +23,12 @@ export default function DashboardLayout() {
       }
     };
     fetchRole();
-  }, [user]);
+  }, [user, axiosSecure]);
+
+  const handleLogout = async () => {
+    await logOut();
+    navigate("/");
+  };
 
   if (loading) {
     return (
@@ -32,11 +37,6 @@ export default function DashboardLayout() {
       </div>
     );
   }
-
-  const handleLogout = async () => {
-    await logOut();
-    navigate("/");
-  };
 
   return (
     <div className="min-h-screen flex">
@@ -48,11 +48,12 @@ export default function DashboardLayout() {
         </div>
 
         <ul className="space-y-2">
-          {/* Common */}
+          {/* Profile */}
           <li>
-            <Link to="/" className="block p-2 hover:bg-red-200 rounded">Home</Link>
+            <Link to="/dashboard/profile" className="block p-2 hover:bg-red-200 rounded">Profile</Link>
           </li>
 
+          {/* User Routes */}
           {role === "user" && (
             <>
               <li>
@@ -64,6 +65,7 @@ export default function DashboardLayout() {
             </>
           )}
 
+          {/* Volunteer Routes */}
           {role === "volunteer" && (
             <>
               <li>
@@ -75,6 +77,7 @@ export default function DashboardLayout() {
             </>
           )}
 
+          {/* Admin Routes */}
           {role === "admin" && (
             <>
               <li>
@@ -85,6 +88,8 @@ export default function DashboardLayout() {
               </li>
             </>
           )}
+
+          {/* Logout */}
           <li>
             <button onClick={handleLogout} className="w-full p-2 text-left text-red-600 hover:bg-red-200 rounded">
               Logout
@@ -93,36 +98,51 @@ export default function DashboardLayout() {
         </ul>
       </aside>
 
-      {/* Main content */}
+      {/* Main Content */}
       <main className="flex-1 bg-white p-4">
-        <div className="md:hidden mb-4">
-          <details className="dropdown">
-            <summary className="btn btn-sm btn-outline">Menu</summary>
-            <ul className="p-2 shadow menu dropdown-content bg-base-100 rounded-box w-52 mt-2 z-50">
-              {role === "user" && (
-                <>
-                  <li><Link to="/dashboard/create-request">Create Request</Link></li>
-                  <li><Link to="/dashboard/my-requests">My Requests</Link></li>
-                </>
-              )}
-              {role === "volunteer" && (
-                <>
-                  <li><Link to="/dashboard/all-requests">All Requests</Link></li>
-                  <li><Link to="/dashboard/volunteer-blogs">Blog Control</Link></li>
-                </>
-              )}
-              {role === "admin" && (
-                <>
-                  <li><Link to="/dashboard/manage-users">Manage Users</Link></li>
-                  <li><Link to="/dashboard/manage-blogs">Manage Blogs</Link></li>
-                </>
-              )}
-              <li><button onClick={handleLogout}>Logout</button></li>
-            </ul>
-          </details>
+        {/* Top Bar */}
+        <div className="flex justify-between items-center mb-4">
+          {/* Mobile Dropdown */}
+          <div className="md:hidden">
+            <details className="dropdown">
+              <summary className="btn btn-sm btn-outline">Menu</summary>
+              <ul className="p-2 shadow menu dropdown-content bg-base-100 rounded-box w-52 mt-2 z-50">
+                <li><Link to="/dashboard/profile">Profile</Link></li>
+                {role === "user" && (
+                  <>
+                    <li><Link to="/dashboard/create-request">Create Request</Link></li>
+                    <li><Link to="/dashboard/my-requests">My Requests</Link></li>
+                  </>
+                )}
+                {role === "volunteer" && (
+                  <>
+                    <li><Link to="/dashboard/all-requests">All Requests</Link></li>
+                    <li><Link to="/dashboard/volunteer-blogs">Blog Control</Link></li>
+                  </>
+                )}
+                {role === "admin" && (
+                  <>
+                    <li><Link to="/dashboard/manage-users">Manage Users</Link></li>
+                    <li><Link to="/dashboard/manage-blogs">Manage Blogs</Link></li>
+                  </>
+                )}
+                <li><button onClick={handleLogout}>Logout</button></li>
+              </ul>
+            </details>
+          </div>
+
+          {/* Content Management Button for Admins */}
+          {role === "admin" && (
+            <button
+              onClick={() => navigate("/dashboard/content-management")}
+              className="btn btn-sm bg-red-600 text-white hover:bg-red-700"
+            >
+              📝 Content Management
+            </button>
+          )}
         </div>
 
-        {/* Nested Routes Rendered Here */}
+        {/* Nested Route */}
         <Outlet />
       </main>
     </div>

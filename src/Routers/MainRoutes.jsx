@@ -15,17 +15,17 @@ import DonationRequestForm from "../pages/DonationRequestForm";
 import Myrequests from "../pages/Myrequests";
 import DonationRequests from "../pages/DonationRequests";
 import BlogPage from "../pages/BlogPage";
-
-import PrivateRoute from "../Routers/PrivateRoute";
-import RoleBasedRoute from "../Routers/RoleBasedRoute";
-
 import CreateRequest from "../pages/CreateRequest";
 import AllRequests from "../pages/AllRequests";
 import VolunteerBlogs from "../pages/VolunteerBlogs";
 import ManageUsers from "../pages/ManageUsers";
 import ManageBlogs from "../pages/ManageBlogs";
-import ContentManagement from "../pages/ContentManagement"; // <-- Import your ContentManagement page here
+import ContentManagement from "../pages/ContentManagement";
 import AddBlogForm from "../pages/AddBlogForm";
+import ProfilePage from "../pages/Profile"; // ✅ NEW IMPORT
+
+import PrivateRoute from "../Routers/PrivateRoute";
+import RoleBasedRoute from "../Routers/RoleBasedRoute";
 
 const MainRoutes = createBrowserRouter([
   {
@@ -53,18 +53,17 @@ const MainRoutes = createBrowserRouter([
         ),
       },
       {
-  path: "/details/:requestId",
-  element: (
-    <PrivateRoute>
-      <DetailsPage />
-    </PrivateRoute>
-  ),
-  loader: async ({ params }) => {
-    const { data } = await axios.get(`https://assignment-12-sever.vercel.app/details/${params.requestId}`);
-    return data;
-  },
-},
-
+        path: "/details/:requestId",
+        element: (
+          <PrivateRoute>
+            <DetailsPage />
+          </PrivateRoute>
+        ),
+        loader: async ({ params }) => {
+          const { data } = await axios.get(`https://assignment-12-sever.vercel.app/details/${params.requestId}`);
+          return data;
+        },
+      },
 
       {
         path: "/dashboard",
@@ -74,15 +73,25 @@ const MainRoutes = createBrowserRouter([
           </PrivateRoute>
         ),
         children: [
-          // User role routes
+          // ✅ Profile route for all roles
+          {
+            path: "profile",
+            element: (
+              <PrivateRoute>
+                <ProfilePage />
+              </PrivateRoute>
+            ),
+          },
+
+          // User routes
           { path: "create-request", element: <CreateRequest /> },
           { path: "my-requests", element: <Myrequests /> },
 
-          // Volunteer role routes
+          // Volunteer routes
           { path: "all-requests", element: <AllRequests /> },
           { path: "volunteer-blogs", element: <VolunteerBlogs /> },
 
-          // Admin role routes wrapped with RoleBasedRoute
+          // Admin routes
           {
             path: "manage-users",
             element: (
@@ -99,17 +108,14 @@ const MainRoutes = createBrowserRouter([
               </RoleBasedRoute>
             ),
           },
-
-           {
-      path: "add-blog",
-      element: (
-        <RoleBasedRoute allowedRoles={["admin"]}>
-          <AddBlogForm />
-        </RoleBasedRoute>
-      ),
-    },
-
-          // Add the missing content-management route here:
+          {
+            path: "add-blog",
+            element: (
+              <RoleBasedRoute allowedRoles={["admin"]}>
+                <AddBlogForm />
+              </RoleBasedRoute>
+            ),
+          },
           {
             path: "content-management",
             element: (
@@ -119,11 +125,8 @@ const MainRoutes = createBrowserRouter([
             ),
           },
 
-          // Dashboard home / index route
-          {
-            index: true,
-            element: <Dashboard />,
-          },
+          // Default dashboard route
+          { index: true, element: <Dashboard /> },
         ],
       },
 
